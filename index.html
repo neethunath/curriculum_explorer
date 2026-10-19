@@ -126,25 +126,30 @@
                 const objectives = item["Learning Objectives"] || '-';
 
                 // Dynamically collect all Content Title & URL fields (1 through 7+)
+                // Dynamically collect all Content Title & URL fields (1 through 7+)
                 let contentLinksHtml = '';
                 let index = 1;
                 while (item[`Content Title ${index}`] !== undefined) {
                     const title = item[`Content Title ${index}`];
                     const url = item[`Content URL ${index}`];
 
-                    if (title && title.trim() !== '' && title !== 'NA' && title !== '-') {
-                        if (url && url.trim() !== '' && url !== 'NA' && url !== '-') {
-                            contentLinksHtml += `<div class="mb-1"><a href="${url}" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline font-medium">🎮 ${title}</a></div>`;
+                    if (title !== undefined && title !== null && title !== '') {
+                        const trimmedTitle = String(title).trim();
+                        const trimmedUrl = url !== undefined && url !== null ? String(url).trim() : '';
+
+                        if (trimmedTitle.toUpperCase() === 'NA') {
+                            contentLinksHtml += `<div class="mb-1 text-slate-500">NA</div>`;
+                        } else if (trimmedUrl !== '' && trimmedUrl.toUpperCase() !== 'NA' && trimmedUrl !== '-') {
+                            contentLinksHtml += `<div class="mb-1"><a href="${trimmedUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline font-medium">🎮 ${trimmedTitle}</a></div>`;
                         } else {
-                            contentLinksHtml += `<div class="mb-1 text-slate-700">🎮 ${title}</div>`;
+                            contentLinksHtml += `<div class="mb-1 text-slate-700">🎮 ${trimmedTitle}</div>`;
                         }
                     }
                     index++;
                 }
                 if (!contentLinksHtml) {
-                    contentLinksHtml = '-';
+                contentLinksHtml = '-';
                 }
-
                 html += `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-3.5 whitespace-nowrap font-medium text-slate-900">${grade}</td>

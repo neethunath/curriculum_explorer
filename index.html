@@ -85,7 +85,7 @@
             });
         }
 
-        // Render table grouped by selected topic
+        // Render table grouped by selected topic with sticky header and vertical scroll
         function renderTable(selectedTopic) {
             const container = document.getElementById('progressionContainer');
             const countDisplay = document.getElementById('rowCount');
@@ -108,10 +108,10 @@
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200">
                     <h2 class="text-lg font-bold text-slate-800">Progression Table: ${selectedTopic}</h2>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="max-h-[650px] overflow-y-auto overflow-x-auto">
                     <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-100 text-slate-700 text-xs uppercase tracking-wider border-b border-slate-200">
+                        <thead class="sticky top-0 bg-slate-100 shadow-sm z-10">
+                            <tr class="text-slate-700 text-xs uppercase tracking-wider border-b border-slate-200">
                                 <th class="p-3.5 font-semibold">Grade</th>
                                 <th class="p-3.5 font-semibold">Outcome ID</th>
                                 <th class="p-3.5 font-semibold">Learning Objectives</th>

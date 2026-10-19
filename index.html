@@ -11,14 +11,14 @@
 
     <!-- Header -->
     <header class="bg-indigo-600 text-white shadow-md py-6 px-8">
-        <div class="max-w-6xl mx-auto">
+        <div class="max-w-7xl mx-auto">
             <h1 class="text-3xl font-bold tracking-tight">Curriculum Progression Explorer</h1>
-            <p class="text-indigo-100 mt-1">Filter by topic to track concept evolution across grades instantly.</p>
+            <p class="text-indigo-100 mt-1">Select a topic to view its complete curriculum progression table.</p>
         </div>
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-6xl mx-auto w-full p-6 flex-grow">
+    <main class="max-w-7xl mx-auto w-full p-6 flex-grow">
         
         <!-- Search & Filter Controls -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -33,18 +33,18 @@
             </div>
         </div>
 
-        <!-- Results Progression Area -->
-        <div id="progressionContainer" class="space-y-6">
+        <!-- Results Table Container -->
+        <div id="progressionContainer" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="text-center py-16 text-slate-400">
-                <p class="text-lg">Please select a topic above to view its grade-wise progression.</p>
+                <p class="text-lg">Please select a topic above to view its curriculum table.</p>
             </div>
         </div>
 
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 text-center text-sm text-slate-500">
-        Curriculum Progression Tool &bull; Instant Client-Side Filtering
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-sm text-slate-500 mt-auto">
+        Curriculum Progression Tool &bull; Table View
     </footer>
 
     <!-- Application Script -->
@@ -60,7 +60,7 @@
             } catch (error) {
                 console.error("Error loading data.json:", error);
                 document.getElementById('progressionContainer').innerHTML = `
-                    <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-center">
+                    <div class="bg-red-50 border border-red-200 text-red-700 p-6 rounded-xl text-center">
                         <p class="font-semibold">Could not load <code>data.json</code>.</p>
                         <p class="text-sm mt-1">Make sure <code>data.json</code> is saved in the same folder as this HTML file.</p>
                     </div>
@@ -70,7 +70,6 @@
 
         // Populate dropdown with unique topics
         function populateTopics() {
-            // Using capital 'Topic' matching your json structure
             const topics = [...new Set(curriculumData.map(item => item.Topic))].filter(Boolean).sort();
             const select = document.getElementById('topicSelect');
             
@@ -82,22 +81,21 @@
             });
 
             select.addEventListener('change', (e) => {
-                renderProgression(e.target.value);
+                renderTable(e.target.value);
             });
         }
 
-        // Render progression cards grouped by grade
-        function renderProgression(selectedTopic) {
+        // Render table grouped by selected topic
+        function renderTable(selectedTopic) {
             const container = document.getElementById('progressionContainer');
             const countDisplay = document.getElementById('rowCount');
 
             if (!selectedTopic) {
-                container.innerHTML = `<div class="text-center py-16 text-slate-400"><p class="text-lg">Please select a topic above to view its grade-wise progression.</p></div>`;
+                container.innerHTML = `<div class="text-center py-16 text-slate-400"><p class="text-lg">Please select a topic above to view its curriculum table.</p></div>`;
                 countDisplay.textContent = '';
                 return;
             }
 
-            // Filter data instantly using JS (Capital 'Topic')
             const filtered = curriculumData.filter(item => item.Topic === selectedTopic);
             countDisplay.textContent = `Showing ${filtered.length} entries for "${selectedTopic}"`;
 
@@ -106,31 +104,56 @@
                 return;
             }
 
-            let html = `<h2 class="text-xl font-bold text-slate-800 mb-4">Progression Pathway: ${selectedTopic}</h2>`;
-            html += `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+            let html = `
+                <div class="px-6 py-4 bg-slate-50 border-b border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800">Progression Table: ${selectedTopic}</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <th class="p-3.5 font-semibold">Grade</th>
+                                <th class="p-3.5 font-semibold">Outcome ID</th>
+                                <th class="p-3.5 font-semibold">Learning Objectives</th>
+                                <th class="p-3.5 font-semibold">Outcome</th>
+                                <th class="p-3.5 font-semibold">Content Title</th>
+                                <th class="p-3.5 font-semibold">URL</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 text-sm text-slate-700">
+            `;
 
             filtered.forEach(item => {
-                // Extract game/content links dynamically if available
-                let gameHtml = '';
-                if (item["Content Title 1"] && item["Content URL 1"]) {
-                    gameHtml = `<div class="mt-4 pt-3 border-t border-slate-100 text-xs text-emerald-700 font-medium bg-emerald-50 px-3 py-2 rounded-lg">
-                        🎮 Game: <a href="${item["Content URL 1"]}" target="_blank" class="underline hover:text-emerald-900">${item["Content Title 1"]}</a>
-                    </div>`;
+                const grade = item.Grade || '-';
+                const outcomeId = item["Outcome-ID"] || item.OutcomeID || '-';
+                const objectives = item["Learning Objectives"] || item.Objective || '-';
+                const outcome = item.Outcome || '-';
+                const contentTitle = item["Content Title 1"] || item.ContentTitle || '-';
+                const contentUrl = item["Content URL 1"] || item.ContentURL || '';
+
+                let urlCell = '-';
+                if (contentUrl && contentUrl !== 'NA') {
+                    urlCell = `<a href="${contentUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline font-medium">Link</a>`;
                 }
 
                 html += `
-                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                        <div>
-                            <span class="inline-block bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-full mb-3">${item.Grade || 'General'} &bull; Phase: ${item.Phase || 'Core'}</span>
-                            <h3 class="font-bold text-slate-900 text-base mb-2">${item["Learning Objectives"] || item.Example || 'Concept Detail'}</h3>
-                            <p class="text-slate-600 text-sm mb-4">${item.Outcome || ''}</p>
-                        </div>
-                        ${gameHtml}
-                    </div>
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3.5 whitespace-nowrap font-medium text-slate-900">${grade}</td>
+                        <td class="p-3.5 whitespace-nowrap text-slate-500 font-mono text-xs">${outcomeId}</td>
+                        <td class="p-3.5">${objectives}</td>
+                        <td class="p-3.5">${outcome}</td>
+                        <td class="p-3.5 font-medium text-slate-800">${contentTitle}</td>
+                        <td class="p-3.5 whitespace-nowrap">${urlCell}</td>
+                    </tr>
                 `;
             });
 
-            html += `</div>`;
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
             container.innerHTML = html;
         }
 

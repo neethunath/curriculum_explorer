@@ -70,7 +70,8 @@
 
         // Populate dropdown with unique topics
         function populateTopics() {
-            const topics = [...new Set(curriculumData.map(item => item.topic))].sort();
+            // Using capital 'Topic' matching your json structure
+            const topics = [...new Set(curriculumData.map(item => item.Topic))].filter(Boolean).sort();
             const select = document.getElementById('topicSelect');
             
             topics.forEach(topic => {
@@ -96,8 +97,8 @@
                 return;
             }
 
-            // Filter data instantly using JS
-            const filtered = curriculumData.filter(item => item.topic === selectedTopic);
+            // Filter data instantly using JS (Capital 'Topic')
+            const filtered = curriculumData.filter(item => item.Topic === selectedTopic);
             countDisplay.textContent = `Showing ${filtered.length} entries for "${selectedTopic}"`;
 
             if (filtered.length === 0) {
@@ -105,19 +106,26 @@
                 return;
             }
 
-            // Sort by grade if possible, or group them
             let html = `<h2 class="text-xl font-bold text-slate-800 mb-4">Progression Pathway: ${selectedTopic}</h2>`;
             html += `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
 
             filtered.forEach(item => {
+                // Extract game/content links dynamically if available
+                let gameHtml = '';
+                if (item["Content Title 1"] && item["Content URL 1"]) {
+                    gameHtml = `<div class="mt-4 pt-3 border-t border-slate-100 text-xs text-emerald-700 font-medium bg-emerald-50 px-3 py-2 rounded-lg">
+                        🎮 Game: <a href="${item["Content URL 1"]}" target="_blank" class="underline hover:text-emerald-900">${item["Content Title 1"]}</a>
+                    </div>`;
+                }
+
                 html += `
                     <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between">
                         <div>
-                            <span class="inline-block bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-full mb-3">${item.grade || 'General'}</span>
-                            <h3 class="font-bold text-slate-900 text-base mb-2">${item.objective || item.example || 'Concept Detail'}</h3>
-                            <p class="text-slate-600 text-sm mb-4">${item.description || item.outcome || ''}</p>
+                            <span class="inline-block bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-full mb-3">${item.Grade || 'General'} &bull; Phase: ${item.Phase || 'Core'}</span>
+                            <h3 class="font-bold text-slate-900 text-base mb-2">${item["Learning Objectives"] || item.Example || 'Concept Detail'}</h3>
+                            <p class="text-slate-600 text-sm mb-4">${item.Outcome || ''}</p>
                         </div>
-                        ${item.game ? `<div class="mt-4 pt-3 border-t border-slate-100 text-xs text-emerald-700 font-medium bg-emerald-50 px-3 py-2 rounded-lg">🎮 Game/Activity: ${item.game}</div>` : ''}
+                        ${gameHtml}
                     </div>
                 `;
             });

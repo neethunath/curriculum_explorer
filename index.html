@@ -51,7 +51,6 @@
     <script>
         let curriculumData = [];
 
-        // Fetch data.json on load
         async function loadData() {
             try {
                 const response = await fetch('data.json');
@@ -68,7 +67,6 @@
             }
         }
 
-        // Populate dropdown with unique topics
         function populateTopics() {
             const topics = [...new Set(curriculumData.map(item => item.Topic))].filter(Boolean).sort();
             const select = document.getElementById('topicSelect');
@@ -85,7 +83,6 @@
             });
         }
 
-        // Render table grouped by selected topic with sticky header and vertical scroll
         function renderTable(selectedTopic) {
             const container = document.getElementById('progressionContainer');
             const countDisplay = document.getElementById('rowCount');
@@ -114,10 +111,9 @@
                             <tr class="text-slate-700 text-xs uppercase tracking-wider border-b border-slate-200">
                                 <th class="p-3.5 font-semibold">Grade</th>
                                 <th class="p-3.5 font-semibold">Outcome ID</th>
-                                <th class="p-3.5 font-semibold">Learning Objectives</th>
                                 <th class="p-3.5 font-semibold">Outcome</th>
-                                <th class="p-3.5 font-semibold">Content Title</th>
-                                <th class="p-3.5 font-semibold">URL</th>
+                                <th class="p-3.5 font-semibold">Learning Objectives</th>
+                                <th class="p-3.5 font-semibold">Content & Links</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200 text-sm text-slate-700">
@@ -125,25 +121,37 @@
 
             filtered.forEach(item => {
                 const grade = item.Grade || '-';
-                const outcomeId = item["Outcome-ID"] || item.OutcomeID || '-';
-                const objectives = item["Learning Objectives"] || item.Objective || '-';
+                const outcomeId = item["Outcome ID"] || '-';
                 const outcome = item.Outcome || '-';
-                const contentTitle = item["Content Title 1"] || item.ContentTitle || '-';
-                const contentUrl = item["Content URL 1"] || item.ContentURL || '';
+                const objectives = item["Learning Objectives"] || '-';
 
-                let urlCell = '-';
-                if (contentUrl && contentUrl !== 'NA') {
-                    urlCell = `<a href="${contentUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline font-medium">Link</a>`;
+                // Dynamically collect all Content Title & URL fields (1 through 7+)
+                let contentLinksHtml = '';
+                let index = 1;
+                while (item[`Content Title ${index}`] !== undefined) {
+                    const title = item[`Content Title ${index}`];
+                    const url = item[`Content URL ${index}`];
+
+                    if (title && title.trim() !== '' && title !== 'NA' && title !== '-') {
+                        if (url && url.trim() !== '' && url !== 'NA' && url !== '-') {
+                            contentLinksHtml += `<div class="mb-1"><a href="${url}" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline font-medium">🎮 ${title}</a></div>`;
+                        } else {
+                            contentLinksHtml += `<div class="mb-1 text-slate-700">🎮 ${title}</div>`;
+                        }
+                    }
+                    index++;
+                }
+                if (!contentLinksHtml) {
+                    contentLinksHtml = '-';
                 }
 
                 html += `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-3.5 whitespace-nowrap font-medium text-slate-900">${grade}</td>
                         <td class="p-3.5 whitespace-nowrap text-slate-500 font-mono text-xs">${outcomeId}</td>
-                        <td class="p-3.5">${objectives}</td>
                         <td class="p-3.5">${outcome}</td>
-                        <td class="p-3.5 font-medium text-slate-800">${contentTitle}</td>
-                        <td class="p-3.5 whitespace-nowrap">${urlCell}</td>
+                        <td class="p-3.5">${objectives}</td>
+                        <td class="p-3.5">${contentLinksHtml}</td>
                     </tr>
                 `;
             });
@@ -157,7 +165,6 @@
             container.innerHTML = html;
         }
 
-        // Initialize
         loadData();
     </script>
 </body>
